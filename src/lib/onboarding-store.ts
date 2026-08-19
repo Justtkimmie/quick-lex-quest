@@ -130,3 +130,75 @@ export const progress = (h: Hire) => ({
     ? Math.round((h.tasks.filter((t) => t.done).length / h.tasks.length) * 100)
     : 0,
 });
+
+export const phaseProgress = (h: Hire, phase: TaskPhase) => {
+  const tasks = h.tasks.filter((t) => t.phase === phase);
+  const done = tasks.filter((t) => t.done).length;
+  return { done, total: tasks.length, percent: tasks.length ? Math.round((done / tasks.length) * 100) : 0 };
+};
+
+/** Whole days from today until the start date; negative once started. */
+export function daysUntilStart(startDate: string): number | null {
+  if (!startDate) return null;
+  const start = new Date(`${startDate}T00:00:00`);
+  if (Number.isNaN(start.getTime())) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.round((start.getTime() - today.getTime()) / 86_400_000);
+}
+
+export type HireStatus = "on-track" | "at-risk" | "overdue" | "complete";
+
+export const STATUS_LABEL: Record<HireStatus, string> = {
+  "on-track": "On track",
+  "at-risk": "At risk",
+  overdue: "Overdue",
+  complete: "Complete",
+};
+
+/** At risk: starts within a week and pre-start work is unfinished. Overdue: started, work unfinished. */
+export function hireStatus(h: Hire): HireStatus {
+  const p = progress(h);
+  if (p.percent === 100 && p.docsDone === p.docsTotal) return "complete";
+  const days = daysUntilStart(h.startDate);
+  const preStart = phaseProgress(h, "Pre-start");
+  if (days === null) return "on-track";
+  if (days < 0) return "overdue";
+  if (days <= 7 && preStart.done < preStart.total) return "at-risk";
+  return "on-track";
+}
+
+export function hiresToCsv(hires: Hire[]): string {
+  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+  const rows = [
+    ["Name", "Role", "Email", "Start date", "Manager", "Status", "Tasks done", "Tasks total", "Docs in", "Docs total", "Outstanding documents"],
+    ...hires.map((h) => {
+      const p = progress(h);
+      return [
+        h.name,
+        h.role,
+        h.email,
+        h.startDate,
+        h.manager,
+        STATUS_LABEL[hireStatus(h)],
+        String(p.tasksDone),
+        String(p.tasksTotal),
+        String(p.docsDone),
+        String(p.docsTotal),
+        h.docs.filter((d) => d.status === "outstanding").map((d) => d.label).join("; "),
+      ];
+    }),
+  ];
+  return rows.map((r) => r.map(esc).join(",")).join("\r\n");
+}
+
+export function downloadCsv(filename: string, csv: string) {
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
