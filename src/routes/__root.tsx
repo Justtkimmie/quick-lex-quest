@@ -125,6 +125,22 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <nav className="border-b border-rule bg-card/70 backdrop-blur">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-5 px-6 py-3 sm:px-8">
+          <span className="font-display text-lg text-ink">Internal tools</span>
+          <div className="flex gap-4 text-sm font-medium text-ink-soft">
+            <Link to="/onboarding" activeProps={{ className: "text-ink" }} className="hover:text-ink">
+              Onboarding
+            </Link>
+            <Link to="/resources" activeProps={{ className: "text-ink" }} className="hover:text-ink">
+              Resources
+            </Link>
+            <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: "text-ink" }} className="hover:text-ink">
+              Research method
+            </Link>
+          </div>
+        </div>
+      </nav>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
