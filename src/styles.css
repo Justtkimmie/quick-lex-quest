@@ -186,6 +186,27 @@
   box-shadow: 0 1px 0 var(--color-rule), 0 12px 30px -24px oklch(0.24 0.02 60 / 0.6);
 }
 
+@utility lift {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--color-primary) 35%, var(--color-rule));
+    box-shadow: 0 1px 0 var(--color-rule), 0 20px 40px -28px oklch(0.24 0.02 60 / 0.75);
+  }
+}
+
 @utility marker {
   background-image: linear-gradient(transparent 62%, var(--color-highlight) 62%);
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background-image: none;
+  }
+}
+
