@@ -147,6 +147,18 @@ export function daysUntilStart(startDate: string): number | null {
   return Math.round((start.getTime() - today.getTime()) / 86_400_000);
 }
 
+/** Human-readable start-date countdown, e.g. "starts in 3 days". */
+export function countdownLabel(startDate: string): string {
+  const d = daysUntilStart(startDate);
+  if (d === null) return "start date TBC";
+  if (d === 0) return "starts today";
+  if (d > 0) return `starts in ${d} day${d === 1 ? "" : "s"}`;
+  const past = Math.abs(d);
+  return `started ${past} day${past === 1 ? "" : "s"} ago`;
+}
+
+
+
 export type HireStatus = "on-track" | "at-risk" | "overdue" | "complete";
 
 export const STATUS_LABEL: Record<HireStatus, string> = {
